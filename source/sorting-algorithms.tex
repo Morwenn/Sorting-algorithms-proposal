@@ -110,11 +110,11 @@ template<class ForwardIterator, class Compare>
 \emph{Effects:} Sorts the elements in the range \tcode{[first, last)}.
 
 \pnum
-\emph{Requires:} \tcode{ForwardIterator} shall satisfy the requirements of
+\emph{Requires:} \deleted{\tcode{RandomAccessIterator}}\added{\tcode{ForwardIterator}} shall satisfy the requirements of
 \tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
 
 \pnum
-\emph{Complexity:} $\mathcal{O}(N \log{} N)$ (where \tcode{$N$ == last - first}) comparisons on average; at most $\mathcal{O}(N \log{} N)$ if \tcode{ForwardIterator} additionally satisfies the requirements of \tcode{RandomAccessIterator}.
+\emph{Complexity:} $\mathcal{O}(N \log{} N)$ (where \tcode{$N$ == last - first}) comparisons \added{on average. At most $\mathcal{O}(N \log{} N)$ comparisons if \tcode{ForwardIterator} additionally satisfies the requirements of \tcode{RandomAccessIterator} (Table~110)}.
 \end{itemdescr}
 
 \textbf{25.4.1.2 \tcode{stable\_sort} [stable.sort]}
@@ -133,12 +133,12 @@ template<class ForwardIterator, class Compare>
 \emph{Effects:} Sorts the elements in the range \tcode{[first, last)}.
 
 \pnum
-\emph{Requires:} \tcode{ForwardIterator} shall satisfy the requirements of
+\emph{Requires:} \deleted{\tcode{RandomAccessIterator}}\added{\tcode{ForwardIterator}} shall satisfy the requirements of
 \tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
 
 \pnum
 \emph{Complexity:} It does at most $N \log{}^2 (N)$ (where \tcode{$N$ == last - first})
-comparisons; if enough extra memory is available, it is $N \log{} (N)$.
+comparisons; if enough extra memory is available, it is $N \log{}(N)$.
 
 \pnum
 \emph{Remarks:} Stable~(17.6.5.7).
@@ -163,8 +163,7 @@ template<class ForwardIterator, class Compare>
 \emph{Effects:} Merges two sorted consecutive ranges \tcode{[first, middle)} and \tcode{[middle, last)}, putting the result of the merge into the range \tcode{[first, last)}. The resulting range will be in non-decreasing order; that is, for every iterator \tcode{i} in \tcode{[first, last)} other than \tcode{first}, the condition \tcode{*i < *(i - 1)} or, respectively, \tcode{comp(*i, *(i - 1))} will be false.
 
 \pnum
-\emph{Requires:} The ranges \tcode{[first, middle)} and \tcode{[middle, last)} shall be sorted with respect to \tcode{operator<} or \tcode{comp}. \tcode{ForwardIterator} shall satisfy the requirements of
-\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
+\emph{Requires:} The ranges \tcode{[first, middle)} and \tcode{[middle, last)} shall be sorted with respect to \tcode{operator<} or \tcode{comp}. \deleted{\tcode{BidirectionalIterator}} \added{\tcode{ForwardIterator}} shall satisfy the requirements of \tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
 
 \pnum
 \emph{Complexity:} When enough additional memory is available, \tcode{(last - first) - 1} comparisons. If no additional memory is available, an algorithm with complexity $N \log{} (N)$ (where \tcode{$N$} is equal to \tcode{last - first}) may be used.
