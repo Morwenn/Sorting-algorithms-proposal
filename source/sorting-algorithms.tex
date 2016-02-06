@@ -90,7 +90,7 @@ The Ranges TS \cite{N4560} is yet another obvious target for such a change. It c
 
 \vspace{0.3cm}
 
-No change was made to the required iterator category, random-access iterators are still needed everywhere. Our proposal and the ranges one may be considered at the same time, in which case, we also propose to make the range-based \tcode{std::sort} and \tcode{std::stable\_sort} use the \tcode{ForwardIterator} concept instead of the \tcode{RandomAccessIterator} one and the \tcode{ForwardIterable} concept instead of the \tcode{RandomAccessIterable} one.
+No change was made to the required iterator category by the Ranges TS; random-access iterators are still for every algorithm we propose to change. Our proposal and the ranges one might be considered at the same time, in which case we also propose to make the new overloads of \tcode{std::sort}, \tcode{std::stable\_sort} and \tcode{std::inplace\_merge} use the \tcode{ForwardIterator} concept instead of the \tcode{RandomAccessIterator} one, and the \tcode{ForwardIterable} concept instead of the \tcode{RandomAccessIterable} one.
 
 \section{Proposed wording}
 
