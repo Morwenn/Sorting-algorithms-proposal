@@ -1,6 +1,7 @@
 \documentclass{isocpp_proposal}
 \usepackage{hyperref}
 \usepackage{caption}
+\usepackage{graphicx}
 
 \documentnumber{PXXXX}
 \date{\today}
@@ -78,7 +79,7 @@ While having \tcode{std::sort} call \tcode{std::list::sort} when given list iter
 
 \vspace{0.3cm}
 
-To make sure that using a generic version of \tcode{std::sort} on lists wouldn't incur a big performance loss, we implemented some basic sorting algorithms for bidirectional and forward iterators and did some benchmarks. While our implementations are not as refined as the ones typically found in standard library implementations, the benchmarks show that some generic sorting algorithms are not orders of magnitude slower than \tcode{std::list::sort} and perform rather well. Our sorting algorithms for forward iterators are not that good compared to \tcode{std::forward\_list::sort} but we believe that good implementations might perform better than ours. Also, note that the benchmarks have been performed with lists of integers and that node relinking might always outperform our sorting algorithms for objects that are expensive to move around.
+To make sure that using a generic version of \tcode{std::sort} on lists wouldn't incur a big performance loss, we implemented some basic sorting algorithms for bidirectional and forward iterators and did some benchmarks. While our implementations are not as refined as the ones typically found in standard library implementations, the benchmarks show that some generic sorting algorithms are not orders of magnitude slower than \tcode{std::list::sort} and perform rather well (see the \hyperref[App:Benchmarks]{appendix}). Our sorting algorithms for forward iterators are not that good compared to \tcode{std::forward\_list::sort} but we believe that good implementations might perform better than ours. Also, note that the benchmarks have been performed with lists of integers and that node relinking might always outperform our sorting algorithms for objects that are expensive to move around.
 
 \subsection{Parallel sorting algorithms}
 
@@ -90,7 +91,7 @@ The Ranges TS \cite{N4560} is yet another obvious target for such a change. It c
 
 \vspace{0.3cm}
 
-No change was made to the required iterator category by the Ranges TS; random-access iterators are still for every algorithm we propose to change. Our proposal and the ranges one might be considered at the same time, in which case we also propose to make the new overloads of \tcode{std::sort}, \tcode{std::stable\_sort} and \tcode{std::inplace\_merge} use the \tcode{ForwardIterator} concept instead of the \tcode{RandomAccessIterator} one, and the \tcode{ForwardIterable} concept instead of the \tcode{RandomAccessIterable} one.
+No change was made to the required iterator category by the Ranges TS; random-access iterators are still required for every algorithm we propose to change. Our proposal and the ranges one might be considered at the same time, in which case we also propose to make the new overloads of \tcode{std::sort}, \tcode{std::stable\_sort} and \tcode{std::inplace\_merge} use the \tcode{ForwardIterator} concept instead of the \tcode{RandomAccessIterator} one, and the \tcode{ForwardIterable} concept instead of the \tcode{RandomAccessIterable} one.
 
 \section{Proposed wording}
 
@@ -176,6 +177,45 @@ template<class ForwardIterator, class Compare>
 
 The standard library should make state-of-the-art algorithms available when those ones are easy enough to implement and strive to weaken the iterator categories of these algorithms when doing so occurs no obvious drawback. Sorting algorithms and related algorithms have been studied in depth over the course of the years, and the algorithms discovered since the birth of the standard library allow to efficiently implement some standard algorithms with weakened iterator categories, which is what we propose to standardize with this paper.
 
+\section{Acknowledgments}
+
+Thanks to Walter E. Brown for the thorough review of this proposal and for offering to present it.
+
+\newpage
+\begin{appendices}
+\section*{Appendix: Benchmarks} \label{App:Benchmarks}
+\addcontentsline{toc}{section}{\protect\numberline{}Appendix: Benchmarks}
+
+In order to check whether \tcode{std::sort} and \tcode{std::stable\_sort} overloads for forward and bidirectional iterators would be fast enough for production uses, or abysmally slower than \tcode{std::list::sort} and \tcode{std::forward\_list::sort}, we implemented a median-of-9 quicksort, and a mergesort relying on the \tcode{std::inplace\_merge} overload for forward iterators based on the algorithms described in \emph{Elements of Programming} \cite{EOP}. The code of the algorithms and of the benchmarks can be found in the library cpp-sort \cite{cpp-sort}. The benchmarks were generated on Windows with MinGW g++ 5.3 and the options \tcode{-std=c++14 -O3 -march=native}, and thus use the list sorting functions from libstdc++.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{forward-list-int.png}
+\end{figure}
+
+\newpage
+
+The benchmarks sort collections of one million elements with the given sorting algorithms and compare the running times. Several patterns are benchmarked to display how the different sorting algorithms adapt to the patterns present in the collections to sort. It is also worth noting that the `inplace\_merge` functions used by mergesort to sort forward and bidirectional iterators are not the same: the one used for forward iterators comes from \tcode{Elements of Programming} while the one used for bidirectional iterators comes from libc++.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{forward-list-long-double.png}
+\end{figure}
+
+For the sake of simplicity, we only benchmarked singly and double linked lists of \tcode{int} and \tcode{long double} values. Be it for forward or bidirectional iterators, there is no clear winner: the \tcode{sort} method of the lists seem to always be the slowest when the values are "truly" random, but it seems to adapt more smoothly to patterns than the other algorithms. Mergesort is pretty good for \tcode{std::forward\_list} when the collection is already almost sorted, but its bidirectional version is almost always the slowest one; it probably has to do with the fact that the implementations are rather different; the libc++ algorithm may be perfectible. Quicksort isn't good with patterns, but it tends to handle random values better than the other algorithms and it is by far the fastest algorithm when the collection to sort only contains a handful of different values. Also, note that quicksort can degrade to $\mathcal{O}(n \log{}^2 n)$ even though none of the benchmarked patterns trigger this behavior.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{list-int.png}
+\end{figure}
+
+To sum up: the major differences between the algorithms used to sort forward and bidirectional iterators is the performance difference of mergesort for some patterns, which is probably mostly due to the different implementations of \tcode{inplace\_merge}. The difference between sorting \tcode{int} and \tcode{long double} values isn't obvious, but the \tcode{sort} method of \tcode{std::list} and \tcode{std::forward\_list} is comparatively better. Due to the way lists sort themselves, we expect that the \tcode{sort} methods become better and better compared to the other algorithms when the size of the objects and the cost of a move or swap operation grows.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{list-long-double.png}
+\end{figure}
+
+
+\end{appendices}
+
+\newpage
 \bibliographystyle{IEEEtran}
 \bibliography{biblio}
 
