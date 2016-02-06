@@ -1,0 +1,183 @@
+\documentclass{isocpp_proposal}
+\usepackage{hyperref}
+\usepackage{caption}
+
+\documentnumber{PXXXX}
+\date{\today}
+\project{Weakening the iterator categories of some standard algorithms}
+\replyto{Thibaut Le Jehan $\langle$ lejehan.thibaut@gmail.com $\rangle$}
+
+\input{macros}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+This paper proposes to weaken the iterator categories of several standard library generic algorithms to reflect the advances in made in the realm of algorithms. Such changes were already proposed in the Palo Alto report \cite{N3351} but were later dropped in the Ranges TS \cite{N4560}, stating that such changes would be best done in a separate proposal (clause B.2.6). Most of the changes are based on the algorithmic research done since the standardization of the standard algorithms, and notably on the advances reported in Stepanov and McJones' \emph{Elements of Programming} \cite{EOP}.
+
+\vspace{0.3cm}
+
+This proposal includes the wording for the new versions of the algorithms, as well as updated complexities. It also includes some further comments and benchmarks to demonstrate that weakening the iterator categories of these algorithms is worth it. We propose to make the following algorithms work with forward iterators:
+
+\begin{itemize}
+\item \tcode{std::inplace\_merge}
+\item \tcode{std::sort}
+\item \tcode{std::stable\_sort}
+\end{itemize}
+
+\section{Motivation and Scope}
+
+Currently, the functions \tcode{std::sort} and \tcode{std::stable\_sort} only work with random-access iterators, making it possible to sort classes such as \tcode{std::vector}, \tcode{std::deque} and \tcode{std::string}, but not the standard library containers \tcode{std::list} and \tcode{std::forward\_list}, which respectively provide bidirectional and forward iterators. However, both of them have a member function \tcode{sort} to perform the job, even though sorting through a member function is hardly a generic approach. Even the recent C++ Core Guidelines \cite{CppCoreGuidelines} agree on that:
+
+\begin{quotation}
+It is probably a dumb idea to define a \tcode{sort} as a member function of a container, but it is not unheard of and it makes a good example of what not to do.
+\end{quotation}
+
+That said, \tcode{std::list::sort} and \tcode{std::forward\_list::sort} have a reason to exist: these algorithms can make more assumptions knowing that they work on list data structures, allowing for a  $\mathcal{O}(\log{} n)$ space complexity instead of a  $\mathcal{O}(n)$ one for a classic mergesort. Moreover, these functions don't invalidate the iterators and even work when the stored elements are not moveable. These improvements are due to the ability that lists have to relink nodes instead of moving values around. However, this approach is hardly generic: it only allows to sort full lists instead of arbitrary pairs of iterators, and it forces to add a corresponding member function \tcode{sort} to custom classes wrapping a list and offering an iterator interface.
+
+\vspace{0.3cm}
+
+To add to the confusion, the standard mandates that the member functions \tcode{std::list::sort} and \tcode{std::forward\_list::sort} are stable even though the name does not reflect the guarantee (while \tcode{std::stable\_sort} makes it clear that the algorithm is stable).
+
+\vspace{0.3cm}
+
+Basically, we would like to be able to sort pairs of forward, bidirectional and random-access iterators through a common algorithm interface. The algorithm \tcode{std::inplace\_merge} is often a building block of \tcode{std::stable\_sort} and clearly influences its complexity guarantees; therefore it makes sense to weaken its iterator category to forward iterators too (algorithms exist).
+
+\section{Discussion}
+
+\subsection{Complexity of \tcode{std::sort}}
+
+Some versions of quicksort work reasonably well with forward iterators with an average $\mathcal{O}(n \log{} n)$ complexity but have a $\mathcal{O}(n^2)$ worst case complexity. A simple mergesort may always have a $\mathcal{O}(n \log{} n)$ complexity, but it requires $\mathcal{O}(n)$ auxiliary memory. The most efficient sorting algorithms such as introsort \cite{introsort} and pattern-defeating quicksort \cite{pdqsort} only work with random-access iterators because they need to fall back to a heapsort in order to avoid the quadratic behavior of quicksort.
+
+\vspace{0.3cm}
+
+We think that the right approach to this  problem is to only guarantee an $\mathcal{O}(n \log{} n)$ average complexity for forward and bidirectional iterators, and either no worst case complexity or a $\mathcal{O}(n^2)$ worst case complexity. In C++03, \tcode{std::sort} has no worst case complexity guarantee, before efficient algorithms with an $\mathcal{O}(n \log{} n)$ worst case complexity were discovered. A simple mergesort has a $\mathcal{O}(n \log{} n)$ worst case complexity for forward and bidirectional iterators, but it requires additional memory and \tcode{std::sort} has an history of not using much additional memory to sort a collection.
+
+\subsection{Complexity of \tcode{std::stable\_sort}}
+
+The current complexity mandated for \tcode{std::stable\_sort} is described as follows: 
+
+\begin{quotation}
+It does at most $N \log{}^2 (N)$ (where \tcode{$N$ == last - first}) comparisons; if enough extra memory is available, it is  $N \log{} (N)$.
+\end{quotation}
+
+This description more or less corresponds to a trivial mergesort implementation using \tcode{std::inplace\_merge} to perform the merge operation. Since \tcode{std::inplace\_merge} accepts bidirectional iterators, it is easy to make \tcode{std::stable\_sort} work with bidirectional iterators as well, with the exact same complexity guarantees as with random-access iterators.
+
+\vspace{0.3cm}
+
+In-place merge algorithms also exist for forward iterators, with or without using a temporary buffer, even though the standard library function \tcode{std::inplace\_merge} is only guaranteed to work with bidirectional iterators. In \emph{Elements of Programming} \cite{EOP}, there is an implementation of an in-place merge algorithm working with forward iterators which adapts to the available memory. That algorithm runs in $\mathcal{O}(n)$ time hen enough memory is available and in $\mathcal{O}(n \log{} n)$ if no additional memory is available, which means that a mergesort for forward iterators can run in $\mathcal{O}(n \log{} n)$ or $\mathcal{O}(n \log{}^2 n)$ time depending on the available memory, which corresponds to the current complexity of \tcode{std::stable\_sort} for random-access iterators.
+
+\subsection{Benefits of \tcode{sort} member functions}
+
+\tcode{std::list::sort} and \tcode{std::forward\_list::sort} can be more efficient than general-purpose stable sorting algorithms for forward and bidirectional iterators; this is due to the fact that they can relink the list's nodes instead of moving or swapping the values. One could say that having general-purpose sorting algorithms for bidirectional and forward iterators might encourage to use them on these data structures while they might be less efficient than the member functions.
+
+\vspace{0.3cm}
+
+While having \tcode{std::sort} call \tcode{std::list::sort} when given list iterators would be an interesting idea, the standard generic algorithms are not allowed to alter the containers, and relinking nodes clearly counts as altering the list; therefore, relinking nodes when using generic algorithms is not a legal optimization.
+
+\vspace{0.3cm}
+
+To make sure that using a generic version of \tcode{std::sort} on lists wouldn't incur a big performance loss, we implemented some basic sorting algorithms for bidirectional and forward iterators and did some benchmarks. While our implementations are not as refined as the ones typically found in standard library implementations, the benchmarks show that some generic sorting algorithms are not orders of magnitude slower than \tcode{std::list::sort} and perform rather well. Our sorting algorithms for forward iterators are not that good compared to \tcode{std::forward\_list::sort} but we believe that good implementations might perform better than ours. Also, note that the benchmarks have been performed with lists of integers and that node relinking might always outperform our sorting algorithms for objects that are expensive to move around.
+
+\subsection{Parallel sorting algorithms}
+
+This proposal focuses on the sequential algorithms from the standard library header \tcode{<algorithm>}, but we believe that the parallel algorithms from the Parallelism TS \cite{N4507} could be other targets for such a change. This paper does not propose to weaken the iterator categories of the corresponding algorithms in the Parallelism Ts, but we encourage people to check whether it can be done and to analyze the resulting algorithmic complexities.
+
+\subsection{Range algorithms}
+
+The Ranges TS \cite{N4560} is yet another obvious target for such a change. It currently redefines \tcode{std::sort} and \tcode{std::stable\_sort} so that they can work with an \tcode{[iterator, sentinel)} pair or a full iterable.
+
+\vspace{0.3cm}
+
+No change was made to the required iterator category, random-access iterators are still needed everywhere. Our proposal and the ranges one may be considered at the same time, in which case, we also propose to make the range-based \tcode{std::sort} and \tcode{std::stable\_sort} use the \tcode{ForwardIterator} concept instead of the \tcode{RandomAccessIterator} one and the \tcode{ForwardIterable} concept instead of the \tcode{RandomAccessIterable} one.
+
+\section{Proposed wording}
+
+\textbf{25.4.1.1 \tcode{sort} [sort]}
+
+\begin{itemdecl}
+template<class ForwardIterator>
+  void sort(ForwardIterator first, ForwardIterator last);
+
+template<class ForwardIterator, class Compare>
+  void sort(ForwardIterator first, ForwardIterator last,
+            Compare comp);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\emph{Effects:} Sorts the elements in the range \tcode{[first, last)}.
+
+\pnum
+\emph{Requires:} \tcode{ForwardIterator} shall satisfy the requirements of
+\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
+
+\pnum
+\emph{Complexity:} $\mathcal{O}(N \log{} N)$ (where \tcode{$N$ == last - first}) comparisons on average; at most $\mathcal{O}(N \log{} N)$ if \tcode{ForwardIterator} additionally satisfies the requirements of \tcode{RandomAccessIterator}.
+\end{itemdescr}
+
+\textbf{25.4.1.2 \tcode{stable\_sort} [stable.sort]}
+
+\begin{itemdecl}
+template<class ForwardIterator>
+  void stable_sort(ForwardIterator first, ForwardIterator last);
+
+template<class ForwardIterator, class Compare>
+  void stable_sort(ForwardIterator first, ForwardIterator last,
+                   Compare comp);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\emph{Effects:} Sorts the elements in the range \tcode{[first, last)}.
+
+\pnum
+\emph{Requires:} \tcode{ForwardIterator} shall satisfy the requirements of
+\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
+
+\pnum
+\emph{Complexity:} It does at most $N \log{}^2 (N)$ (where \tcode{$N$ == last - first})
+comparisons; if enough extra memory is available, it is $N \log{} (N)$.
+
+\pnum
+\emph{Remarks:} Stable~(17.6.5.7).
+\end{itemdescr}
+
+\textbf{25.4.4 Merge}
+
+\begin{itemdecl}
+template<class ForwardIterator>
+  void inplace_merge(ForwardIterator first,
+                     ForwardIterator middle,
+                     ForwardIterator last);
+
+template<class ForwardIterator, class Compare>
+  void inplace_merge(ForwardIterator first,
+                     ForwardIterator middle,                    
+                     ForwardIterator last, Compare comp);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\emph{Effects:} Merges two sorted consecutive ranges \tcode{[first, middle)} and \tcode{[middle, last)}, putting the result of the merge into the range \tcode{[first, last)}. The resulting range will be in non-decreasing order; that is, for every iterator \tcode{i} in \tcode{[first, last)} other than \tcode{first}, the condition \tcode{*i < *(i - 1)} or, respectively, \tcode{comp(*i, *(i - 1))} will be false.
+
+\pnum
+\emph{Requires:} The ranges \tcode{[first, middle)} and \tcode{[middle, last)} shall be sorted with respect to \tcode{operator<} or \tcode{comp}. \tcode{ForwardIterator} shall satisfy the requirements of
+\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
+
+\pnum
+\emph{Complexity:} When enough additional memory is available, \tcode{(last - first) - 1} comparisons. If no additional memory is available, an algorithm with complexity $N \log{} (N)$ (where \tcode{$N$} is equal to \tcode{last - first}) may be used.
+
+\pnum
+\emph{Remarks:} Stable~(17.6.5.7).
+\end{itemdescr}
+
+\section{Conclusion}
+
+The standard library should make state-of-the-art algorithms available when those ones are easy enough to implement and strive to weaken the iterator categories of these algorithms when doing so occurs no obvious drawback. Sorting algorithms and related algorithms have been studied in depth over the course of the years, and the algorithms discovered since the birth of the standard library allow to efficiently implement some standard algorithms with weakened iterator categories, which is what we propose to standardize with this paper.
+
+\bibliographystyle{IEEEtran}
+\bibliography{biblio}
+
+\end{document}  
