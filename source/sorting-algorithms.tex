@@ -10,6 +10,11 @@
 
 \input{macros}
 
+% Configure escaping in item declarations
+\lstset{
+    escapeinside={(*@}{@*)},
+}
+
 \begin{document}
 \maketitle
 
@@ -97,14 +102,17 @@ No change was made to the required iterator category by the Ranges TS; random-ac
 
 \textbf{25.4.1.1 \tcode{sort} [sort]}
 
-\begin{itemdecl}
-template<class ForwardIterator>
-  void sort(ForwardIterator first, ForwardIterator last);
+\begin{lstlisting}
+template<class (*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*)>
+  void sort((*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*) first,
+            (*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*) last);
 
-template<class ForwardIterator, class Compare>
-  void sort(ForwardIterator first, ForwardIterator last,
+template<class (*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*),
+    class Compare>
+  void sort((*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*) first,
+            (*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*) last,
             Compare comp);
-\end{itemdecl}
+\end{lstlisting}
 
 \begin{itemdescr}
 \pnum
@@ -112,22 +120,27 @@ template<class ForwardIterator, class Compare>
 
 \pnum
 \emph{Requires:} \deleted{\tcode{RandomAccessIterator}}\added{\tcode{ForwardIterator}} shall satisfy the requirements of
-\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
+\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \linebreak \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
 
 \pnum
 \emph{Complexity:} $\mathcal{O}(N \log{} N)$ (where \tcode{$N$ == last - first}) comparisons \added{on average. At most $\mathcal{O}(N \log{} N)$ comparisons if \tcode{ForwardIterator} additionally satisfies the requirements of \tcode{RandomAccessIterator} (Table~110)}.
 \end{itemdescr}
 
+\newpage
+
 \textbf{25.4.1.2 \tcode{stable\_sort} [stable.sort]}
 
-\begin{itemdecl}
-template<class ForwardIterator>
-  void stable_sort(ForwardIterator first, ForwardIterator last);
+\begin{lstlisting}
+template<class (*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*)>
+  void stable_sort((*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*) first,
+                   (*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*) last);
 
-template<class ForwardIterator, class Compare>
-  void stable_sort(ForwardIterator first, ForwardIterator last,
+template<class (*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*),
+    class Compare>
+  void stable_sort((*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*) first,
+                   (*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*) last,
                    Compare comp);
-\end{itemdecl}
+\end{lstlisting}
 
 \begin{itemdescr}
 \pnum
@@ -135,11 +148,10 @@ template<class ForwardIterator, class Compare>
 
 \pnum
 \emph{Requires:} \deleted{\tcode{RandomAccessIterator}}\added{\tcode{ForwardIterator}} shall satisfy the requirements of
-\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
+\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \linebreak \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
 
 \pnum
-\emph{Complexity:} It does at most $N \log{}^2 (N)$ (where \tcode{$N$ == last - first})
-comparisons; if enough extra memory is available, it is $N \log{}(N)$.
+\emph{Complexity:} It does at most $N \log{}^2 (N)$ (where \tcode{$N$ == last - first}) comparisons; if enough extra memory is available, it is $N \log{}(N)$.
 
 \pnum
 \emph{Remarks:} Stable~(17.6.5.7).
@@ -147,24 +159,26 @@ comparisons; if enough extra memory is available, it is $N \log{}(N)$.
 
 \textbf{25.4.4 Merge}
 
-\begin{itemdecl}
-template<class ForwardIterator>
-  void inplace_merge(ForwardIterator first,
-                     ForwardIterator middle,
-                     ForwardIterator last);
+\begin{lstlisting}
+template<class (*@\deleted{BidirectionalIterator}\added{ForwardIterator}@*)>
+  void inplace_merge((*@\deleted{BidirectionalIterator}\added{ForwardIterator}@*) first,
+                     (*@\deleted{BidirectionalIterator}\added{ForwardIterator}@*) middle,
+                     (*@\deleted{BidirectionalIterator}\added{ForwardIterator}@*) last);
 
-template<class ForwardIterator, class Compare>
-  void inplace_merge(ForwardIterator first,
-                     ForwardIterator middle,                    
-                     ForwardIterator last, Compare comp);
-\end{itemdecl}
+template<class (*@\deleted{BidirectionalIterator}\added{ForwardIterator}@*),
+    class Compare>
+  void inplace_merge((*@\deleted{BidirectionalIterator}\added{ForwardIterator}@*) first,
+                     (*@\deleted{BidirectionalIterator}\added{ForwardIterator}@*) middle,                    
+                     (*@\deleted{BidirectionalIterator}\added{ForwardIterator}@*) last,
+                     Compare comp);
+\end{lstlisting}
 
 \begin{itemdescr}
 \pnum
-\emph{Effects:} Merges two sorted consecutive ranges \tcode{[first, middle)} and \tcode{[middle, last)}, putting the result of the merge into the range \tcode{[first, last)}. The resulting range will be in non-decreasing order; that is, for every iterator \tcode{i} in \tcode{[first, last)} other than \tcode{first}, the condition \tcode{*i < *(i - 1)} or, respectively, \tcode{comp(*i, *(i - 1))} will be false.
+\emph{Effects:} Merges two sorted consecutive ranges \linebreak \tcode{[first, middle)} and \tcode{[middle, last)}, putting the result of the merge into the range \tcode{[first, last)}. The resulting range will be in non-decreasing order; that is, for every iterator \tcode{i} in \tcode{[first, last)} other than \tcode{first}, the condition \tcode{*i < *(i - 1)} or, respectively, \tcode{comp(*i, *(i - 1))} will be false.
 
 \pnum
-\emph{Requires:} The ranges \tcode{[first, middle)} and \tcode{[middle, last)} shall be sorted with respect to \tcode{operator<} or \tcode{comp}. \deleted{\tcode{BidirectionalIterator}} \added{\tcode{ForwardIterator}} shall satisfy the requirements of \tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
+\emph{Requires:} The ranges \tcode{[first, middle)} and \tcode{[middle, last)} shall be sorted with respect to \tcode{operator<} or \tcode{comp}. \linebreak \deleted{\tcode{BidirectionalIterator}} \added{\tcode{ForwardIterator}} shall satisfy the requirements of \tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
 
 \pnum
 \emph{Complexity:} When enough additional memory is available, \tcode{(last - first) - 1} comparisons. If no additional memory is available, an algorithm with complexity $N \log{} (N)$ (where \tcode{$N$} is equal to \tcode{last - first}) may be used.
