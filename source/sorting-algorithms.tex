@@ -206,7 +206,7 @@ For the sake of simplicity, we only benchmarked collections of \tcode{int} and \
 \includegraphics[width=\textwidth]{list-int.png}
 \end{figure}
 
-To sum up: the major difference between the algorithms used to sort forward and bidirectional iterators is the performance difference of mergesort for some patterns, which is mostly due to the different implementations of the algorithm. The difference between sorting \tcode{int} and \tcode{long double} values isn't obvious, but the \tcode{sort} method of \tcode{std::list} and \tcode{std::forward\_list} is comparatively better. Due to the way lists sort themselves, we expect that the \tcode{sort} methods become better and better compared to the other algorithms when the size of the objects and the cost of a move or swap operation grows.
+To sum up: the major difference between the algorithms used to sort forward and bidirectional iterators is the performance difference of mergesort for some patterns, which is mostly due to the different implementations of the algorithm. The difference between sorting \tcode{int} and \tcode{long double} values isn't obvious, but the \tcode{sort} method of \tcode{std::list} and \tcode{std::forward\_list} is comparatively better, especially for \tcode{std::list}. Due to the way lists sort themselves, we expect that the \tcode{sort} methods become better and better compared to the other algorithms when the size of the objects and the cost of a move or swap operation grows.
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{list-long-double.png}
