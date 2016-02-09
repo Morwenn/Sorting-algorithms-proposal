@@ -2,6 +2,9 @@
 \usepackage{hyperref}
 \usepackage{caption}
 \usepackage{graphicx}
+\usepackage[margin=0.7in]{geometry}
+
+
 
 \setsecnumdepth{subsection}
 \renewcommand\thesection{\arabic{section}}
@@ -39,7 +42,7 @@ This proposal includes the wording for the new versions of the algorithms, as we
 
 \section{Motivation and Scope}
 
-Currently, the functions \tcode{std::sort} and \tcode{std::stable\_sort} only work with random-access iterators, making it possible to sort classes such as \tcode{std::vector}, \tcode{std::deque} and \tcode{std::string}, but not the standard library containers \tcode{std::list} and \tcode{std::forward\_list}, which respectively provide bidirectional and forward iterators. However, both of them have a member function \tcode{sort} to perform the job, even though sorting through a member function is hardly a generic approach. Even the recent C++ Core Guidelines \cite{CppCoreGuidelines} agree on that:
+Currently, the functions \tcode{std::sort} and \tcode{std::stable\_sort} only work with random-access iterators, making it possible to sort classes such as \linebreak \tcode{std::vector}, \tcode{std::deque} and \tcode{std::string}, but not the standard library containers \tcode{std::list} and \tcode{std::forward\_list}, which respectively provide bidirectional and forward iterators. However, both of them have a member function \tcode{sort} to perform the job, even though sorting through a member function is hardly a generic approach. Even the recent C++ Core Guidelines \cite{CppCoreGuidelines} agree on that:
 
 \begin{quotation}
 It is probably a dumb idea to define a \tcode{sort} as a member function of a container, but it is not unheard of and it makes a good example of what not to do.
@@ -73,7 +76,7 @@ The current complexity mandated for \tcode{std::stable\_sort} is described as fo
 It does at most $N \log{}^2 (N)$ (where \tcode{$N$ == last - first}) comparisons; if enough extra memory is available, it is  $N \log{} (N)$.
 \end{quotation}
 
-This description more or less corresponds to a trivial mergesort implementation using \tcode{std::inplace\_merge} to perform the merge operation. Since \tcode{std::inplace\_merge} accepts bidirectional iterators, it is easy to make \tcode{std::stable\_sort} work with bidirectional iterators as well, with the exact same complexity guarantees as with random-access iterators.
+This description more or less corresponds to a trivial mergesort implementation using \tcode{std::inplace\_merge} to perform the merge operation. Since \tcode{std::inplace\_merge} accepts bidirectional iterators, it is easy to make \linebreak \tcode{std::stable\_sort} work with bidirectional iterators as well, with the exact same complexity guarantees as with random-access iterators.
 
 \vspace{0.3cm}
 
@@ -90,6 +93,8 @@ While having \tcode{std::sort} call \tcode{std::list::sort} when given list iter
 \vspace{0.3cm}
 
 To make sure that using a generic version of \tcode{std::sort} on lists wouldn't incur a big performance loss, we implemented some basic sorting algorithms for bidirectional and forward iterators and did some benchmarks. While our implementations are not as refined as the ones typically found in standard library implementations, the benchmarks show that some generic sorting algorithms are not orders of magnitude slower than \tcode{std::list::sort} and perform rather well (see the \hyperref[App:Benchmarks]{appendix}). Our sorting algorithms for forward iterators are not that good compared to \tcode{std::forward\_list::sort} but we believe that good implementations might perform better than ours. Also, note that the benchmarks have been performed with lists of integers and that node relinking might always outperform our sorting algorithms for objects that are expensive to move around.
+
+\pagebreak
 
 \subsection{Parallel sorting algorithms}
 
@@ -125,10 +130,10 @@ template<class (*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*),
 
 \pnum
 \emph{Requires:} \deleted{\tcode{RandomAccessIterator}}\added{\tcode{ForwardIterator}} shall satisfy the requirements of
-\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \linebreak \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
+\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \linebreak \tcode{MoveAssignable} (Table~22).
 
 \pnum
-\emph{Complexity:} $\mathcal{O}(N \log{} N)$ (where \tcode{$N$ == last - first}) comparisons \added{on average. At most $\mathcal{O}(N \log{} N)$ comparisons if \tcode{ForwardIterator} additionally satisfies the requirements of \tcode{RandomAccessIterator} (Table~110)}.
+\emph{Complexity:} $\mathcal{O}(N \log{} N)$ (where \tcode{$N$ == last - first}) comparisons \added{on average. At most $\mathcal{O}(N \log{} N)$ comparisons if \tcode{ForwardIterator} additionally satisfies the requirements of \tcode{RandomAccessIterator} \linebreak (Table~110)}.
 \end{itemdescr}
 
 \newpage
@@ -153,7 +158,7 @@ template<class (*@\deleted{RandomAccessIterator}\added{ForwardIterator}@*),
 
 \pnum
 \emph{Requires:} \deleted{\tcode{RandomAccessIterator}}\added{\tcode{ForwardIterator}} shall satisfy the requirements of
-\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \linebreak \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
+\tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \linebreak \tcode{MoveAssignable} (Table~22).
 
 \pnum
 \emph{Complexity:} It does at most $N \log{}^2 (N)$ (where \tcode{$N$ == last - first}) comparisons; if enough extra memory is available, it is $N \log{}(N)$.
@@ -180,10 +185,10 @@ template<class (*@\deleted{BidirectionalIterator}\added{ForwardIterator}@*),
 
 \begin{itemdescr}
 \pnum
-\emph{Effects:} Merges two sorted consecutive ranges \linebreak \tcode{[first, middle)} and \tcode{[middle, last)}, putting the result of the merge into the range \tcode{[first, last)}. The resulting range will be in non-decreasing order; that is, for every iterator \tcode{i} in \tcode{[first, last)} other than \tcode{first}, the condition \tcode{*i < *(i - 1)} or, respectively, \tcode{comp(*i, *(i - 1))} will be false.
+\emph{Effects:} Merges two sorted consecutive ranges \tcode{[first, middle)} and \tcode{[middle, last)}, putting the result of the merge into the range \tcode{[first, last)}. The resulting range will be in non-decreasing order; that is, for every iterator \tcode{i} in \tcode{[first, last)} other than \tcode{first}, the condition \linebreak \tcode{*i < *(i - 1)} or, respectively, \tcode{comp(*i, *(i - 1))} will be false.
 
 \pnum
-\emph{Requires:} The ranges \tcode{[first, middle)} and \tcode{[middle, last)} shall be sorted with respect to \tcode{operator<} or \tcode{comp}. \linebreak \deleted{\tcode{BidirectionalIterator}} \added{\tcode{ForwardIterator}} shall satisfy the requirements of \tcode{ValueSwappable}~(17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
+\emph{Requires:} The ranges \tcode{[first, middle)} and \tcode{[middle, last)} shall be sorted with respect to \tcode{operator<} or \tcode{comp}. \deleted{\tcode{BidirectionalIterator}} \added{\tcode{ForwardIterator}} shall satisfy the requirements of \tcode{ValueSwappable} (17.6.3.2). The type of \tcode{*first} shall satisfy the requirements of \linebreak \tcode{MoveConstructible} (Table~20) and of \tcode{MoveAssignable} (Table~22).
 
 \pnum
 \emph{Complexity:} When enough additional memory is available, \tcode{(last - first) - 1} comparisons. If no additional memory is available, an algorithm with complexity $N \log{} (N)$ (where \tcode{$N$} is equal to \tcode{last - first}) may be used.
@@ -211,8 +216,6 @@ In order to check whether \tcode{std::sort} and \tcode{std::stable\_sort} overlo
 \includegraphics[width=\textwidth]{forward-list-int.png}
 \end{figure}
 
-\newpage
-
 The benchmarks sort collections of one million elements with the given sorting algorithms and compare the running times. Several patterns are benchmarked to display how the different sorting algorithms adapt to the patterns present in the collections to sort. It is also worth noting that mergesort has different implementations for forward and bidirectional iterators: the one used for forward iterators builds upon a the in-place merge algorithm from \emph{Elements of Programming} and uses a few tricks to allocate less memory, hence the good performance on almost sorted data. The one used for bidirectional iterators builds upon the \tcode{std::inplace\_merge} implementation from libc++ but its implementation is rather trivial, we didn't make efforts to optimize it as much as the forward iterators one (the implementation of the bidirectional version almost corresponds to the textbook implementation of a mergesort).
 
 \begin{figure}[h]
@@ -220,6 +223,8 @@ The benchmarks sort collections of one million elements with the given sorting a
 \end{figure}
 
 For the sake of simplicity, we only benchmarked collections of \tcode{int} and \tcode{long double} values. Be it for forward or bidirectional iterators, there is no clear winner: the \tcode{sort} method of the lists seem to always be the slowest when the values are "truly" random, but it seems to adapt more smoothly to patterns than the other algorithms -- except \emph{Alternating (16 values)}. Mergesort is pretty good for \tcode{std::forward\_list} when the collection is almost sorted, but its bidirectional version is almost always the slowest one; it probably has to do with the fact that the implementation is not as optimized as the forward iterator one, as mentioned in the previous paragraph. Quicksort isn't good with patterns, but it is by far the fastest algorithm when the collection to sort only contains a handful of different values. Also, note that quicksort can degrade to $\mathcal{O}(n \log{}^2 n)$ even though none of the benchmarked patterns trigger this behavior.
+
+\newpage
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{list-int.png}
