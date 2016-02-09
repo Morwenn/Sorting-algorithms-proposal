@@ -3,6 +3,11 @@
 \usepackage{caption}
 \usepackage{graphicx}
 
+\setsecnumdepth{subsection}
+\renewcommand\thesection{\arabic{section}}
+\renewcommand\thesubsection{\thesection.\arabic{subsection}}
+\setcounter{tocdepth}{2}
+
 \documentnumber{PXXXX}
 \date{\today}
 \project{Weakening the iterator categories of some standard algorithms}
