@@ -7,3 +7,4 @@ instead of only working with random-access iterators.
 The following files are available:
 
 * [P0227R0](P0227R0.pdf)
+* [Slides](p0227-slides.html) for the WG21 meeting in Jacksonville
