@@ -1,9 +1,9 @@
-# Sorting-algorithms-proposal
+### Weakening the iterator category of some standard algorithms
 
-This repository contains a WIP proposal to make the C++ standard library algorithms `std::sort`
-and `std::stable_sort` work with forward and bidirectional iterators instead of only working
-with random-access iterators.
+This repository contains a proposal to make the C++ standard library algorithms `std::sort`,
+`std::stable_sort` and `std::inplace_merge` work with forward and bidirectional iterators
+instead of only working with random-access iterators.
 
 The following files are available:
 
-* [Draft of the next revision](sorting-algorithms.pdf)
+* [P0227R0](P0227R0.pdf)
