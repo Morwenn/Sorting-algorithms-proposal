@@ -7,4 +7,4 @@ instead of only working with random-access iterators.
 The following files are available:
 
 * [P0227R0](P0227R0.pdf)
-* [Slides](p0227-slides.html) for the WG21 meeting in Jacksonville
+* [Slides](http://slides.com/morwenn/weakening-the-iterator-categories-of-some-sorting-algorithms/#/) for the WG21 meeting in Jacksonville
